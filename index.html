@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CliWeb - Proyecto 3</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Barra  de navegación -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/StardewLogo.webp" class="pixel-logo">
+      </div>
+      
+      <ul class="pixel-nav">
+        <li class="nav-item active" data-section="dashboard">
+          <i class="fas fa-chart-bar pixel-icon"></i>
+          <span>Dashboard</span>
+        </li>
+        <li class="nav-item" data-section="transactions">
+          <i class="fas fa-coins pixel-icon"></i>
+          <span>Transacciones</span>
+        </li>
+        <li class="nav-item" data-section="categories">
+          <i class="fas fa-tags pixel-icon"></i>
+          <span>Categorias</span>
+        </li>
+        <li class="nav-item" data-section="budgets">
+          <i class="fas fa-wallet pixel-icon"></i>
+          <span>Presupuestos</span>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div class="gold-display">
+          <i class="fas fa-coins"></i>
+          <span id="total-gold">1,250g</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="content">
+      <header class="pixel-header">
+        <h1 id="section-title">Dashboard Financiero</h1>
+        <div class="pixel-stats">
+          <div class="stat-box">
+            <span>Ingresos</span>
+            <span class="stat-value income">+2,500g</span>
+          </div>
+          <div class="stat-box">
+            <span>Gastos</span>
+            <span class="stat-value expense">-1,250g</span>
+          </div>
+          <div class="stat-box">
+            <span>Balance</span>
+            <span class="stat-value balance">+1,250g</span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Sección Dashboard -->
+      <section id="dashboard" class="content-section active">
+        <div class="pixel-row">
+          <div class="pixel-card chart-card">
+            <h2><i class="fas fa-chart-pie"></i> Resumen Mensual</h2>
+            <canvas id="monthlyChart" width="400" height="200"></canvas>
+          </div>
+          <div class="pixel-card quick-actions">
+            <h2><i class="fas fa-bolt"></i> Acciones Rapidas</h2>
+          </div>
+        </div>
+        
+        <div class="pixel-row">
+          <div class="pixel-card recent-transactions">
+            <h2><i class="fas fa-history"></i> Transacciones Recientes</h2>
+            <div class="transaction-list">
+        </div>
+      </section>
+      
+       <!-- Sección Transacciones -->
+      <section id="transactions" class="content-section">
+        <!-- Contenido de transacciones -->
+      </section>
+      
+      <!-- Sección Categorias -->
+      <section id="categories" class="content-section">
+      </section>
+      
+      <!-- Sección Presupuestos -->
+      <section id="budgets" class="content-section">
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
