@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Inicializar sidebar
+  // Inicialización de Sidebar
   const sidebar = new Sidebar();
   sidebar.render('sidebar-container');
 
-  // Configurar manejo de secciones
   document.addEventListener('section-change', function(e) {
     loadSection(e.detail);
   });
@@ -30,11 +29,14 @@ function loadSection(sectionId) {
         const categories = new Categories();
         categories.render(sectionId);
         break;
-      // Puedes añadir más casos para otros componentes aquí
+
+      case 'transactions':
+        const transactions = new Transactions();
+        transactions.render(sectionId);
+        break;
     }
   }
-  
-  // Actualizar título
+
   updateSectionTitle(sectionId);
 }
 
