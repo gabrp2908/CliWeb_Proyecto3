@@ -16,10 +16,23 @@ function loadSection(sectionId) {
   // Ocultar todas las secciones
   document.querySelectorAll('.content-section').forEach(section => {
     section.classList.remove('active');
+    section.innerHTML = ''; // Limpiar contenido anterior
   });
   
   // Mostrar sección seleccionada
-  document.getElementById(sectionId)?.classList.add('active');
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.classList.add('active');
+    
+    // Cargar componente correspondiente
+    switch(sectionId) {
+      case 'categories':
+        const categories = new Categories();
+        categories.render(sectionId);
+        break;
+      // Puedes añadir más casos para otros componentes aquí
+    }
+  }
   
   // Actualizar título
   updateSectionTitle(sectionId);
