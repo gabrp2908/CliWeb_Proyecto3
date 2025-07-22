@@ -46,15 +46,11 @@
 }
 
 .icon {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   margin-right: 10px;
   text-align: center;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding-top: 20px;
+  cursor: url('../assets/images/pointer.png'), pointer;
 }
 
 /* Responsive */

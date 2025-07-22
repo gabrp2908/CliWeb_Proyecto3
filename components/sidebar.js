@@ -8,19 +8,19 @@ class Sidebar {
         
         <ul class="nav">
           <li class="nav-item active" data-section="dashboard">
-            <i class="fas fa-chart-bar icon"></i>
+            <img src="./assets/images/blue_chicken.png" class="icon">
             <span>Dashboard</span>
           </li>
           <li class="nav-item" data-section="transactions">
-            <i class="fas fa-coins icon"></i>
+            <img src="./assets/images/stardrop.png" class="icon">
             <span>Transacciones</span>
           </li>
           <li class="nav-item" data-section="categories">
-            <i class="fas fa-tags icon"></i>
+            <img src="./assets/images/junimo.png" class="icon">
             <span>Categorias</span>
           </li>
           <li class="nav-item" data-section="budgets">
-            <i class="fas fa-wallet icon"></i>
+            <img src="./assets/images/prismatic_shard.png" class="icon">
             <span>Presupuestos</span>
           </li>
         </ul>
