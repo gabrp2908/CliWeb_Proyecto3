@@ -4,11 +4,12 @@ class Categories {
     this.defaultCategories = [
       { id: 1, name: 'Alimentacion', type: 'expense' },
       { id: 2, name: 'Transporte', type: 'expense' },
-      { id: 3, name: 'Entretenimiento', type: 'expense' },
-      { id: 4, name: 'Servicios', type: 'income' },
-      { id: 5, name: 'Salud', type: 'income' },
-      { id: 6, name: 'Educacion', type: 'income' },
-      { id: 7, name: 'Otros', type: 'income' }
+      { id: 3, name: 'Ocio', type: 'expense' },
+      { id: 4, name: 'Servicios', type: 'expense' },
+      { id: 5, name: 'Salud', type: 'expense' },
+      { id: 6, name: 'Educacion', type: 'expense' },
+      { id: 7, name: 'Otros', type: 'income' },
+      { id: 8, name: 'Salario', type: 'income' }
     ];
   }
 
@@ -54,7 +55,7 @@ class Categories {
         <div class="category-modal" id="category-modal">
           <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2 id="modal-title">Nueva Categoría</h2>
+            <h2 id="modal-title">Nueva Categoria</h2>
             <form id="category-form">
               <input type="hidden" id="category-id">
               <div class="form-group">
@@ -108,17 +109,17 @@ class Categories {
     const form = document.getElementById('category-form');
     
     if (category) {
-      document.getElementById('modal-title').textContent = 'Editar Categoría';
+      document.getElementById('modal-title').textContent = 'Editar Categoria';
       document.getElementById('category-id').value = category.id;
       document.getElementById('category-name').value = category.name;
       document.getElementById('category-type').value = category.type;
     } else {
-      document.getElementById('modal-title').textContent = 'Nueva Categoría';
+      document.getElementById('modal-title').textContent = 'Nueva Categoria';
       form.reset();
       document.getElementById('category-id').value = '';
     }
     
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
   }
 
   closeModal() {
@@ -133,7 +134,7 @@ class Categories {
   }
 
   async deleteCategory(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+    if (confirm('¿Esta seguro de eliminar esta categoria?')) {
       await window.idbUtils.deleteById('categories', id);
       await this.loadCategories();
       this.updateCategoriesList();
@@ -147,12 +148,12 @@ class Categories {
     const type = form.querySelector('#category-type').value;
     
     if (!name) {
-      alert('Por favor ingresa un nombre para la categoría');
+      alert('Ingrese un nombre para la categoria');
       return;
     }
 
     if (!['expense', 'income'].includes(type)) {
-      alert('Tipo de categoría no válido');
+      alert('Tipo de categoria no valido');
       return;
     }
 
@@ -162,7 +163,7 @@ class Categories {
     );
     
     if (nameExists) {
-      alert('Ya existe una categoría con ese nombre');
+      alert('Ya existe una categoria con ese nombre');
       return;
     }
 

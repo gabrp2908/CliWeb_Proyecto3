@@ -16,7 +16,7 @@
   border-radius: 8px;
   padding: 10px 15px;
   font-family: 'game', cursive;
-  font-size: 20px;
+  font-size: 26px;
   color: var(--dark-brown);
   cursor: url('../assets/images/pointer.png'), pointer;
   transition: all 0.2s;
@@ -54,11 +54,11 @@
 
 .category-info h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: 32px;
 }
 
 .category-type {
-  font-size: 16px;
+  font-size: 22px;
   padding: 2px 8px;
   border-radius: 12px;
   display: inline-block;
@@ -71,7 +71,7 @@
 
 .category-type.income {
   background-color: rgba(6, 214, 160, 0.2);
-  color: #06D6A0;
+  color: var(--light-green);
 }
 
 .category-actions {
@@ -101,6 +101,7 @@
   height: 100%;
   background-color: rgba(0,0,0,0.5);
   z-index: 1000;
+  display: flex;
   justify-content: center;
   align-items: center;
 }
@@ -113,6 +114,8 @@
   width: 90%;
   max-width: 500px;
   position: relative;
+  transform: translateY(0);
+  margin: auto;
 }
 
 .close-modal {
@@ -134,7 +137,7 @@
 .form-group label {
   display: block;
   margin-bottom: 5px;
-  font-size: 18px;
+  font-size: 26px;
 }
 
 .form-group input,
@@ -142,7 +145,7 @@
   width: 100%;
   padding: 8px;
   font-family: 'game', cursive;
-  font-size: 16px;
+  font-size: 20px;
   border: 2px solid var(--brown);
   border-radius: 5px;
   background-color: var(--lighter-beige);

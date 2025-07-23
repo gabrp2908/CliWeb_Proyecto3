@@ -6,6 +6,7 @@
   --dark-brown: #4a3c2a;
   --light-beige: #f2d19e;
   --lighter-beige: #FFFFBF;
+  --light-green: #07ad81;
 }
 
 @font-face {
@@ -56,6 +57,11 @@ body {
 .header h1 {
   font-size: 1.5em;
   margin-bottom: 0;
+}
+
+.sidebar-footer h5{
+  font-weight: 100;
+  font-size: 20px;
 }
 
 /* Secciones de contenido */
