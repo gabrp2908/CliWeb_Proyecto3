@@ -25,6 +25,11 @@ function loadSection(sectionId) {
     
     // Cargar componente correspondiente
     switch(sectionId) {
+      case 'dashboard':
+        const charts = new Charts();
+        charts.render(sectionId);
+        break;
+        
       case 'categories':
         const categories = new Categories();
         categories.render(sectionId);
