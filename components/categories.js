@@ -1,6 +1,7 @@
 class Categories {
   constructor() {
-    const defaultCategories = [
+    this.categories = [];
+    this.defaultCategories = [
       { id: 1, name: 'Alimentacion', type: 'expense' },
       { id: 2, name: 'Transporte', type: 'expense' },
       { id: 3, name: 'Entretenimiento', type: 'expense' },
@@ -9,21 +10,33 @@ class Categories {
       { id: 6, name: 'Educacion', type: 'income' },
       { id: 7, name: 'Otros', type: 'income' }
     ];
+  }
 
-    try {
-      const savedCategories = localStorage.getItem('categories');
-      this.categories = savedCategories ? JSON.parse(savedCategories) : defaultCategories;
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
-      this.categories = defaultCategories;
+  async render(containerId) {
+    await this.loadCategories();
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = this.getTemplate();
+      this.initEvents();
+      this.loadStyles();
     }
+  }
 
-    this.template = `
+  async loadCategories() {
+    let cats = await window.idbUtils.getAll('categories');
+    if (!cats || cats.length === 0) {
+      await window.idbUtils.putBulk('categories', this.defaultCategories);
+      cats = [...this.defaultCategories];
+    }
+    this.categories = cats;
+  }
+
+  getTemplate() {
+    return `
       <div class="categories-container">
         <div class="categories-header">
           <button class="btn-add-category">Agregar Categoria</button>
         </div>
-        
         <div class="categories-list">
           ${this.categories.map(category => `
             <div class="category-card" data-id="${category.id}">
@@ -38,20 +51,16 @@ class Categories {
             </div>
           `).join('')}
         </div>
-        
         <div class="category-modal" id="category-modal">
           <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h2 id="modal-title">Nueva Categoría</h2>
-            
             <form id="category-form">
               <input type="hidden" id="category-id">
-              
               <div class="form-group">
                 <label for="category-name">Nombre</label>
                 <input type="text" id="category-name" required>
               </div>
-              
               <div class="form-group">
                 <label for="category-type">Tipo</label>
                 <select id="category-type" required>
@@ -59,7 +68,6 @@ class Categories {
                   <option value="income">Ingreso</option>
                 </select>
               </div>
-              
               <button type="submit" class="btn-save">Guardar</button>
             </form>
           </div>
@@ -68,45 +76,30 @@ class Categories {
     `;
   }
 
-  render(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-      container.innerHTML = this.template;
-      this.initEvents();
-      this.loadStyles();
-    }
-  }
-
   initEvents() {
-    // Delegación de eventos para evitar duplicados
-    document.querySelector('.categories-container')?.addEventListener('click', (e) => {
-      // Abrir modal para añadir nueva categoría
+    document.querySelector('.categories-container')?.addEventListener('click', async (e) => {
       if (e.target.closest('.btn-add-category')) {
         this.openModal();
       }
       
-      // Botones de editar
       if (e.target.closest('.btn-edit')) {
         const categoryId = parseInt(e.target.closest('.category-card').getAttribute('data-id'));
         this.editCategory(categoryId);
       }
       
-      // Botones de eliminar
       if (e.target.closest('.btn-delete')) {
         const categoryId = parseInt(e.target.closest('.category-card').getAttribute('data-id'));
-        this.deleteCategory(categoryId);
+        await this.deleteCategory(categoryId);
       }
       
-      // Cerrar modal
       if (e.target.closest('.close-modal')) {
         this.closeModal();
       }
     });
     
-    // Guardar categoría
-    document.getElementById('category-form')?.addEventListener('submit', (e) => {
+    document.getElementById('category-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      this.saveCategory();
+      await this.saveCategory();
     });
   }
 
@@ -139,15 +132,15 @@ class Categories {
     }
   }
 
-  deleteCategory(id) {
+  async deleteCategory(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
-      this.categories = this.categories.filter(c => c.id !== id);
-      localStorage.setItem('categories', JSON.stringify(this.categories));
+      await window.idbUtils.deleteById('categories', id);
+      await this.loadCategories();
       this.updateCategoriesList();
     }
   }
 
-  saveCategory() {
+  async saveCategory() {
     const form = document.getElementById('category-form');
     const idInput = form.querySelector('#category-id');
     const name = form.querySelector('#category-name').value.trim();
@@ -173,20 +166,17 @@ class Categories {
       return;
     }
 
+    let id;
     if (idInput.value) {
-      const id = parseInt(idInput.value);
-      const index = this.categories.findIndex(c => c.id === id);
-      if (index !== -1) {
-        this.categories[index] = { id, name, type };
-      }
+      id = parseInt(idInput.value);
     } else {
-      const newId = this.generateUniqueId();
-      this.categories.push({ id: newId, name, type });
+      id = this.generateUniqueId();
     }
 
-    localStorage.setItem('categories', JSON.stringify(this.categories));
+    await window.idbUtils.put('categories', { id, name, type });
+    await this.loadCategories();
     this.closeModal();
-    this.updateCategoriesList(); // Cambiamos this.render por esta nueva función
+    this.updateCategoriesList();
   }
 
   updateCategoriesList() {

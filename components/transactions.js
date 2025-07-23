@@ -1,9 +1,42 @@
 class Transactions {
   constructor() {
-    this.transactions = this.loadTransactions();
-    this.categories = this.loadCategories();
-    
-    this.template = `
+    this.transactions = [];
+    this.categories = [];
+  }
+
+  async render(containerId) {
+    await this.loadCategories();
+    await this.loadTransactions();
+    this.template = this.getTemplate();
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = this.template;
+      this.initEvents();
+      this.updateSummary();
+      this.loadStyles();
+    }
+  }
+
+  async loadTransactions() {
+    try {
+      this.transactions = await window.idbUtils.getAll('transactions');
+    } catch (error) {
+      console.error('Error al cargar transacciones:', error);
+      this.transactions = [];
+    }
+  }
+
+  async loadCategories() {
+    try {
+      this.categories = await window.idbUtils.getAll('categories');
+    } catch (error) {
+      console.error('Error al cargar categorias:', error);
+      this.categories = [];
+    }
+  }
+
+  getTemplate() {
+    return `
       <div class="transactions-container">
         <div class="transactions-header">
           <div class="transactions-actions">
@@ -26,7 +59,6 @@ class Transactions {
             </div>
           </div>
         </div>
-        
         <div class="transactions-list">
           <div class="transactions-summary">
             <div class="summary-card">
@@ -42,7 +74,6 @@ class Transactions {
               <span class="amount balance" id="total-balance">$0.00</span>
             </div>
           </div>
-          
           <table class="transactions-table">
             <thead>
               <tr>
@@ -59,25 +90,20 @@ class Transactions {
             </tbody>
           </table>
         </div>
-        
         <div class="transaction-modal" id="transaction-modal">
           <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h2 id="modal-title">Nueva Transaccion</h2>
-            
             <form id="transaction-form">
               <input type="hidden" id="transaction-id">
-              
               <div class="form-group">
                 <label for="transaction-date">Fecha</label>
                 <input type="date" id="transaction-date" required>
               </div>
-              
               <div class="form-group">
                 <label for="transaction-description">Descripcion</label>
                 <input type="text" id="transaction-description" required>
               </div>
-              
               <div class="form-group">
                 <label for="transaction-category">Categoria</label>
                 <select id="transaction-category" required>
@@ -86,7 +112,6 @@ class Transactions {
                   ).join('')}
                 </select>
               </div>
-              
               <div class="form-group">
                 <label for="transaction-type">Tipo</label>
                 <select id="transaction-type" required>
@@ -94,12 +119,10 @@ class Transactions {
                   <option value="expense">Egreso</option>
                 </select>
               </div>
-              
               <div class="form-group">
                 <label for="transaction-amount">Monto</label>
                 <input type="number" id="transaction-amount" min="0" step="0.01" required>
               </div>
-              
               <button type="submit" class="btn-save">Guardar</button>
             </form>
           </div>
@@ -108,83 +131,37 @@ class Transactions {
     `;
   }
 
-  loadTransactions() {
-    try {
-      const savedTransactions = localStorage.getItem('transactions');
-      return savedTransactions ? JSON.parse(savedTransactions) : [];
-    } catch (error) {
-      console.error('Error al cargar transacciones:', error);
-      return [];
-    }
-  }
-
-  loadCategories() {
-    try {
-      const savedCategories = localStorage.getItem('categories');
-      return savedCategories ? JSON.parse(savedCategories) : [];
-    } catch (error) {
-      console.error('Error al cargar categorias:', error);
-      return [];
-    }
-  }
-
-  render(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-      container.innerHTML = this.template;
-      this.initEvents();
-      this.updateSummary();
-      this.loadStyles();
-    }
-  }
-
   initEvents() {
-    // Delegacion de eventos para el contenedor de transacciones
-    document.querySelector('.transactions-container')?.addEventListener('click', (e) => {
-      // Abrir modal para añadir nueva transaccion
+    document.querySelector('.transactions-container')?.addEventListener('click', async (e) => {
       if (e.target.closest('.btn-add-transaction')) {
         this.openModal();
       }
-      
-      // Botones de editar
       if (e.target.closest('.btn-edit')) {
         const transactionId = e.target.closest('tr').getAttribute('data-id');
         this.editTransaction(transactionId);
       }
-      
-      // Botones de eliminar
       if (e.target.closest('.btn-delete')) {
         const transactionId = e.target.closest('tr').getAttribute('data-id');
-        this.deleteTransaction(transactionId);
+        await this.deleteTransaction(transactionId);
       }
-      
-      // Cerrar modal
       if (e.target.closest('.close-modal')) {
         this.closeModal();
       }
     });
-    
-    // Aplicar filtros
     document.querySelector('.btn-apply-filters')?.addEventListener('click', () => {
       this.applyFilters();
     });
-    
-    // Limpiar filtros
     document.querySelector('.btn-clear-filters')?.addEventListener('click', () => {
       this.clearFilters();
     });
-    
-    // Buscar al presionar Enter en el campo de búsqueda
     document.getElementById('search-input')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         this.applyFilters();
       }
     });
-    
-    // Guardar transaccion
-    document.getElementById('transaction-form')?.addEventListener('submit', (e) => {
+    document.getElementById('transaction-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      this.saveTransaction();
+      await this.saveTransaction();
     });
   }
 
@@ -222,16 +199,16 @@ class Transactions {
     }
   }
 
-  deleteTransaction(id) {
+  async deleteTransaction(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta transaccion?')) {
-      this.transactions = this.transactions.filter(t => t.id !== id);
-      this.saveTransactions();
+      await window.idbUtils.deleteById('transactions', id);
+      await this.loadTransactions();
       this.updateTransactionsList();
       this.updateSummary();
     }
   }
 
-  saveTransaction() {
+  async saveTransaction() {
     const form = document.getElementById('transaction-form');
     const idInput = form.querySelector('#transaction-id');
     const date = form.querySelector('#transaction-date').value;
@@ -265,42 +242,17 @@ class Transactions {
       alert('Por favor ingresa un monto válido');
       return;
     }
-
+    let id;
     if (idInput.value) {
-      // Editar transaccion existente
-      const id = idInput.value;
-      const index = this.transactions.findIndex(t => t.id === id);
-      if (index !== -1) {
-        this.transactions[index] = { 
-          id, 
-          date, 
-          description, 
-          categoryId, 
-          type, 
-          amount 
-        };
-      }
+      id = idInput.value;
     } else {
-      // Crear nueva transaccion
-      const newId = this.generateUniqueId();
-      this.transactions.push({ 
-        id: newId, 
-        date, 
-        description, 
-        categoryId, 
-        type, 
-        amount 
-      });
+      id = this.generateUniqueId();
     }
-
-    this.saveTransactions();
+    await window.idbUtils.put('transactions', { id, date, description, categoryId, type, amount });
+    await this.loadTransactions();
     this.closeModal();
     this.updateTransactionsList();
     this.updateSummary();
-  }
-
-  saveTransactions() {
-    localStorage.setItem('transactions', JSON.stringify(this.transactions));
   }
 
   updateTransactionsList(transactions = this.transactions) {

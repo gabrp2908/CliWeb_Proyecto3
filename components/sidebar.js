@@ -46,7 +46,6 @@ class Sidebar {
         navItems.forEach(navItem => navItem.classList.remove('active'));
         this.classList.add('active');
         
-        // Disparar evento personalizado
         document.dispatchEvent(new CustomEvent('section-change', {
           detail: this.getAttribute('data-section')
         }));
