@@ -19,6 +19,8 @@ class Budgets {
       this.renderAlerts();
       this.loadStyles();
       this.initChart();
+      const modal = document.getElementById('budget-modal');
+      if (modal) modal.style.display = 'none';
     }
     return;
   }

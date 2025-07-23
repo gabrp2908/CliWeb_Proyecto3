@@ -14,6 +14,8 @@ class Transactions {
       this.initEvents();
       this.updateSummary();
       this.loadStyles();
+      const modal = document.getElementById('transaction-modal');
+      if (modal) modal.style.display = 'none';
     }
   }
 
