@@ -1,12 +1,46 @@
 class Charts {
   constructor() {
-    this.transactions = this.loadTransactions();
-    this.categories = this.loadCategories();
+    this.transactions = [];
+    this.categories = [];
     this.currentMonth = new Date().getMonth();
     this.currentYear = new Date().getFullYear();
     this.chartInstances = {};
-    
-    this.template = `
+  }
+
+  async render(containerId) {
+    await this.loadDataFromIDB();
+    this.template = this.getTemplate();
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = this.template;
+    this.showLoadingSkeletons();
+
+    this.loadChartJs().then(() => {
+      this.initCharts();
+      this.initDateControls();
+      this.hideLoadingSkeletons();
+    }).catch(error => {
+      console.error('Error loading Chart.js:', error);
+      this.hideLoadingSkeletons();
+    });
+
+    this.loadStyles();
+  }
+
+  async loadDataFromIDB() {
+    try {
+      this.transactions = await window.idbUtils.getAll('transactions');
+      this.categories = await window.idbUtils.getAll('categories');
+    } catch (error) {
+      console.error('Error al cargar datos de IndexedDB:', error);
+      this.transactions = [];
+      this.categories = [];
+    }
+  }
+
+  getTemplate() {
+    return `
     <div class="charts-container">
         <div class="date-controls">
           <h3>Filtrar por:</h3>
@@ -27,25 +61,9 @@ class Charts {
       
       <div class="row">
         <div class="card chart-card">
-          <h2>Gastos por Categoria</h2>
+          <h2>Egresos por Categoria</h2>
           <div id="expenses-by-category-chart-container" class="chart-container">
             <canvas id="expenses-by-category-chart"></canvas>
-          </div>
-        </div>
-        
-        <div class="card chart-card">
-          <h2>Balance Real vs Estimado</h2>
-          <div id="real-vs-estimated-chart-container" class="chart-container">
-            <canvas id="real-vs-estimated-chart"></canvas>
-          </div>
-        </div>
-      </div>
-      
-      <div class="row">
-        <div class="card chart-card">
-          <h2>Evolucion del Balance (Anual)</h2>
-          <div id="balance-evolution-chart-container" class="chart-container">
-            <canvas id="balance-evolution-chart"></canvas>
           </div>
         </div>
         
@@ -56,41 +74,56 @@ class Charts {
           </div>
         </div>
       </div>
+        
+      <div class="row">
+        <div class="card chart-card">
+            <h2>Balance Real vs Estimado</h2>
+            <div id="real-vs-estimated-chart-container" class="chart-container">
+            <canvas id="real-vs-estimated-chart"></canvas>
+            </div>
+        </div>
+     
+        <div class="card chart-card">
+          <h2>Evolucion del Balance (Anual)</h2>
+          <div id="balance-evolution-chart-container" class="chart-container">
+            <canvas id="balance-evolution-chart"></canvas>
+        </div>
+      </div>
     </div>
     `;
-}
-
-getMonthOptions() {
-  const months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-  
-  const options = months.map((month, index) => 
-    `<option value="${index}" ${index === this.currentMonth ? 'selected' : ''}>
-      ${month}
-    </option>`
-  );
-  
-  return options.join('');
-}
-
-getYearOptions() {
-  const currentYear = new Date().getFullYear();
-  const years = [];
-  
-  for (let i = currentYear - 5; i <= currentYear + 1; i++) {
-    years.push(i);
   }
-  
-  const options = years.map(year => 
-    `<option value="${year}" ${year === this.currentYear ? 'selected' : ''}>
-      ${year}
-    </option>`
-  );
-  
-  return options.join('');
-}
+
+  getMonthOptions() {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    
+    const options = months.map((month, index) => 
+      `<option value="${index}" ${index === this.currentMonth ? 'selected' : ''}>
+        ${month}
+      </option>`
+    );
+    
+    return options.join('');
+  }
+
+  getYearOptions() {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    
+    for (let i = currentYear - 5; i <= currentYear + 1; i++) {
+      years.push(i);
+    }
+    
+    const options = years.map(year => 
+      `<option value="${year}" ${year === this.currentYear ? 'selected' : ''}>
+        ${year}
+      </option>`
+    );
+    
+    return options.join('');
+  }
 
   filterTransactionsByMonthYear(transactions, month, year) {
     return transactions.filter(t => {
@@ -155,148 +188,128 @@ getYearOptions() {
     this.chartInstances.realVsEstimated.update();
   }
 
-render(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+  initDateControls() {
+    const monthSelect = document.getElementById('month-select');
+    const yearSelect = document.getElementById('year-select');
+    const applyBtn = document.getElementById('apply-filters-btn');
+    
+    if (!monthSelect || !yearSelect || !applyBtn) return;
 
-  container.innerHTML = this.template;
-  
-  this.showLoadingSkeletons();
-  
-  this.loadChartJs().then(() => {
-    this.initCharts();
-    this.initDateControls();
-    this.hideLoadingSkeletons();
-  }).catch(error => {
-    console.error('Error loading Chart.js:', error);
-    this.hideLoadingSkeletons();
-  });
-  
-  this.loadStyles();
-}
-
-initDateControls() {
-  const monthSelect = document.getElementById('month-select');
-  const yearSelect = document.getElementById('year-select');
-  const applyBtn = document.getElementById('apply-filters-btn');
-  
-  if (!monthSelect || !yearSelect || !applyBtn) return;
-
-  this.currentMonth = parseInt(monthSelect.value);
-  this.currentYear = parseInt(yearSelect.value);
-
-  applyBtn.addEventListener('click', () => {
     this.currentMonth = parseInt(monthSelect.value);
     this.currentYear = parseInt(yearSelect.value);
-    this.updateAllCharts();
-  });
 
-  let updateTimeout;
-  const debounceUpdate = () => {
-    clearTimeout(updateTimeout);
-    updateTimeout = setTimeout(() => {
-      applyBtn.click(); 
-    }, 1000);
-  };
-
-  monthSelect.addEventListener('change', debounceUpdate);
-  yearSelect.addEventListener('change', debounceUpdate);
-}
-
-updateAllCharts() {
-  const applyBtn = document.getElementById('apply-filters-btn');
-  if (applyBtn) {
-    applyBtn.classList.add('loading');
-    applyBtn.disabled = true;
-  }
-
-  setTimeout(() => {
-    try {
-      const monthlyTransactions = this.filterTransactionsByMonthYear(
-        this.transactions, 
-        this.currentMonth, 
-        this.currentYear
-      );
-      const yearlyTransactions = this.filterTransactionsByYear(
-        this.transactions, 
-        this.currentYear
-      );
-
-      if (this.chartInstances.expensesByCategory) {
-        this.updateExpensesByCategory(monthlyTransactions);
-      }
-      if (this.chartInstances.expensesVsIncome) {
-        this.updateExpensesVsIncome(monthlyTransactions);
-      }
-      if (this.chartInstances.balanceEvolution) {
-        this.updateBalanceEvolution(yearlyTransactions);
-      }
-      if (this.chartInstances.realVsEstimated) {
-        this.updateRealVsEstimated(yearlyTransactions);
-      }
-    } catch (error) {
-      console.error('Error updating charts:', error);
-    } finally {
-      if (applyBtn) {
-        applyBtn.classList.remove('loading');
-        applyBtn.disabled = false;
-      }
-    }
-  }, 100);
-}
-
-setupAutoUpdate() {
-  const monthSelect = document.getElementById('month-select');
-  const yearSelect = document.getElementById('year-select');
-  let updateTimeout;
-
-  const handleChange = () => {
-    clearTimeout(updateTimeout);
-    updateTimeout = setTimeout(() => {
+    applyBtn.addEventListener('click', () => {
       this.currentMonth = parseInt(monthSelect.value);
       this.currentYear = parseInt(yearSelect.value);
       this.updateAllCharts();
-    }, 300); 
-  };
-
-  monthSelect.addEventListener('change', handleChange);
-  yearSelect.addEventListener('change', handleChange);
-}
-
-setLoadingState(isLoading) {
-  const monthSelect = document.getElementById('month-select');
-  const yearSelect = document.getElementById('year-select');
-  
-  if (isLoading) {
-    monthSelect.classList.add('select-loading');
-    yearSelect.classList.add('select-loading');
-    
-    document.querySelectorAll('.chart-container').forEach(container => {
-      container.classList.add('chart-updating');
     });
-  } else {
-    monthSelect.classList.remove('select-loading');
-    yearSelect.classList.remove('select-loading');
+
+    let updateTimeout;
+    const debounceUpdate = () => {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        applyBtn.click(); 
+      }, 1000);
+    };
+
+    monthSelect.addEventListener('change', debounceUpdate);
+    yearSelect.addEventListener('change', debounceUpdate);
+  }
+
+  updateAllCharts() {
+    const applyBtn = document.getElementById('apply-filters-btn');
+    if (applyBtn) {
+      applyBtn.classList.add('loading');
+      applyBtn.disabled = true;
+    }
+
+    setTimeout(() => {
+      try {
+        const monthlyTransactions = this.filterTransactionsByMonthYear(
+          this.transactions, 
+          this.currentMonth, 
+          this.currentYear
+        );
+        const yearlyTransactions = this.filterTransactionsByYear(
+          this.transactions, 
+          this.currentYear
+        );
+
+        if (this.chartInstances.expensesByCategory) {
+          this.updateExpensesByCategory(monthlyTransactions);
+        }
+        if (this.chartInstances.expensesVsIncome) {
+          this.updateExpensesVsIncome(monthlyTransactions);
+        }
+        if (this.chartInstances.balanceEvolution) {
+          this.updateBalanceEvolution(yearlyTransactions);
+        }
+        if (this.chartInstances.realVsEstimated) {
+          this.updateRealVsEstimated(yearlyTransactions);
+        }
+      } catch (error) {
+        console.error('Error updating charts:', error);
+      } finally {
+        if (applyBtn) {
+          applyBtn.classList.remove('loading');
+          applyBtn.disabled = false;
+        }
+      }
+    }, 100);
+  }
+
+  setupAutoUpdate() {
+    const monthSelect = document.getElementById('month-select');
+    const yearSelect = document.getElementById('year-select');
+    let updateTimeout;
+
+    const handleChange = () => {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        this.currentMonth = parseInt(monthSelect.value);
+        this.currentYear = parseInt(yearSelect.value);
+        this.updateAllCharts();
+      }, 300); 
+    };
+
+    monthSelect.addEventListener('change', handleChange);
+    yearSelect.addEventListener('change', handleChange);
+  }
+
+  setLoadingState(isLoading) {
+    const monthSelect = document.getElementById('month-select');
+    const yearSelect = document.getElementById('year-select');
+    
+    if (isLoading) {
+      monthSelect.classList.add('select-loading');
+      yearSelect.classList.add('select-loading');
+      
+      document.querySelectorAll('.chart-container').forEach(container => {
+        container.classList.add('chart-updating');
+      });
+    } else {
+      monthSelect.classList.remove('select-loading');
+      yearSelect.classList.remove('select-loading');
+      document.querySelectorAll('.chart-container').forEach(container => {
+        container.classList.remove('chart-updating');
+      });
+    }
+  }
+
+  showLoadingSkeletons() {
     document.querySelectorAll('.chart-container').forEach(container => {
-      container.classList.remove('chart-updating');
+      const skeleton = document.createElement('div');
+      skeleton.className = 'chart-skeleton';
+      container.appendChild(skeleton);
+      container.style.position = 'relative';
     });
   }
-}
 
-showLoadingSkeletons() {
-  document.querySelectorAll('.chart-container').forEach(container => {
-    const skeleton = document.createElement('div');
-    skeleton.className = 'chart-skeleton';
-    container.appendChild(skeleton);
-    container.style.position = 'relative';
-  });
-}
-
-hideLoadingSkeletons() {
-  document.querySelectorAll('.chart-skeleton').forEach(skeleton => {
-    skeleton.remove();
-  });
-}
+  hideLoadingSkeletons() {
+    document.querySelectorAll('.chart-skeleton').forEach(skeleton => {
+      skeleton.remove();
+    });
+  }
 
   updateMonthlyCharts() {
     const filteredTransactions = this.filterTransactionsByDate(
@@ -383,46 +396,6 @@ hideLoadingSkeletons() {
     });
   }
 
-  loadTransactions() {
-    try {
-      const savedTransactions = localStorage.getItem('transactions');
-      return savedTransactions ? JSON.parse(savedTransactions) : [];
-    } catch (error) {
-      console.error('Error al cargar transacciones:', error);
-      return [];
-    }
-  }
-
-  loadCategories() {
-    try {
-      const savedCategories = localStorage.getItem('categories');
-      return savedCategories ? JSON.parse(savedCategories) : [];
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
-      return [];
-    }
-  }
-
-  render(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    container.innerHTML = this.template;
-    
-    this.showLoadingSkeletons();
-    
-    this.loadChartJs().then(() => {
-      this.initCharts();
-      this.initDateControls();
-      this.hideLoadingSkeletons();
-    }).catch(error => {
-      console.error('Error loading Chart.js:', error);
-      this.hideLoadingSkeletons();
-    });
-    
-    this.loadStyles();
-  }
-
   loadChartJs() {
     return new Promise((resolve, reject) => {
       if (typeof Chart !== 'undefined') {
@@ -445,20 +418,20 @@ hideLoadingSkeletons() {
     });
   }
 
-initCharts() {
-  Object.values(this.chartInstances || {}).forEach(chart => {
-    if (chart && typeof chart.destroy === 'function') {
-      chart.destroy();
-    }
-  });
-  
-  this.chartInstances = {
-    expensesByCategory: this.renderExpensesByCategoryChart(this.currentMonth, this.currentYear),
-    realVsEstimated: this.renderRealVsEstimatedChart(this.currentYear),
-    balanceEvolution: this.renderBalanceEvolutionChart(this.currentYear),
-    expensesVsIncome: this.renderExpensesVsIncomeChart(this.currentMonth, this.currentYear)
-  };
-}
+  initCharts() {
+    Object.values(this.chartInstances || {}).forEach(chart => {
+      if (chart && typeof chart.destroy === 'function') {
+        chart.destroy();
+      }
+    });
+    
+    this.chartInstances = {
+      expensesByCategory: this.renderExpensesByCategoryChart(this.currentMonth, this.currentYear),
+      realVsEstimated: this.renderRealVsEstimatedChart(this.currentYear),
+      balanceEvolution: this.renderBalanceEvolutionChart(this.currentYear),
+      expensesVsIncome: this.renderExpensesVsIncomeChart(this.currentMonth, this.currentYear)
+    };
+  }
 
   renderExpensesByCategoryChart(month, year) {
     const expenses = this.transactions.filter(t =>
@@ -487,7 +460,7 @@ initCharts() {
         datasets: [{
           data: Object.values(categoriesData),
           backgroundColor: this.generateColors(Object.keys(categoriesData).length),
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: 'var(--light-beige)'
         }]
       },
@@ -504,9 +477,9 @@ initCharts() {
             labels: {
               font: {
                 family: 'game',
-                size: 16
+                size: 20
               },
-              padding: 20
+              padding: 22
             }
           },
           tooltip: {
@@ -516,7 +489,7 @@ initCharts() {
                 const value = context.raw || 0;
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = Math.round((value / total) * 100);
-                return `${label}: €${value.toFixed(2)} (${percentage}%)`;
+                return `${label}: $${value.toFixed(2)} (${percentage}%)`;
               }
             }
           }
@@ -558,8 +531,8 @@ initCharts() {
           {
             label: 'Real',
             data: realData,
-            borderColor: '#06D6A0',
-            backgroundColor: 'rgba(6, 214, 160, 0.1)',
+            borderColor: '#4a3c2a',
+            backgroundColor: 'rgba(255, 209, 102, 0.1)',
             tension: 0.3,
             fill: true,
             borderWidth: 3
@@ -567,7 +540,7 @@ initCharts() {
           {
             label: 'Estimado',
             data: estimatedData,
-            borderColor: '#FFD166',
+            borderColor: '#4a3c2a',
             backgroundColor: 'rgba(255, 209, 102, 0.1)',
             borderDash: [5, 5],
             tension: 0.3,
@@ -588,14 +561,14 @@ initCharts() {
             labels: {
               font: {
                 family: 'game',
-                size: 14
+                size: 18
               }
             }
           },
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.dataset.label}: €${context.raw.toFixed(2)}`;
+                return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
               }
             }
           }
@@ -605,9 +578,10 @@ initCharts() {
             beginAtZero: false,
             ticks: {
               callback: function(value) {
-                return '€' + value.toLocaleString();
+                return '$' + value.toLocaleString();
               },
               font: {
+                size: 18,
                 family: 'game'
               }
             },
@@ -621,6 +595,7 @@ initCharts() {
             },
             ticks: {
               font: {
+                size: 18,
                 family: 'game'
               }
             }
@@ -665,8 +640,8 @@ initCharts() {
         datasets: [{
           label: 'Balance Acumulado',
           data: accumulatedData,
-          borderColor: '#118AB2',
-          backgroundColor: 'rgba(17, 138, 178, 0.1)',
+          borderColor: '#4a3c2a',
+          backgroundColor: 'rgba(255, 209, 102, 0.1)',
           tension: 0.3,
           fill: true,
           borderWidth: 3
@@ -685,14 +660,17 @@ initCharts() {
             labels: {
               font: {
                 family: 'game',
-                size: 14
+                size: 18
               }
             }
           },
           tooltip: {
+            bodyFont: {
+            size: 14 // Tamaño de fuente en tooltips
+          },
             callbacks: {
               label: function(context) {
-                return `Balance: €${context.raw.toFixed(2)}`;
+                return `Balance: $${context.raw.toFixed(2)}`;
               }
             }
           }
@@ -701,9 +679,10 @@ initCharts() {
           y: {
             ticks: {
               callback: function(value) {
-                return '€' + value.toLocaleString();
+                return '$' + value.toLocaleString();
               },
               font: {
+                size: 18,
                 family: 'game'
               }
             },
@@ -717,6 +696,7 @@ initCharts() {
             },
             ticks: {
               font: {
+                size: 18,
                 family: 'game'
               }
             }
@@ -753,9 +733,9 @@ initCharts() {
         labels: ['Ingresos', 'Gastos'],
         datasets: [{
           data: [totalIncome, totalExpenses],
-          backgroundColor: ['#06D6A0', '#EF476F'],
-          borderColor: ['#06D6A0', '#EF476F'],
-          borderWidth: 2
+          backgroundColor: ['#5ddc63ff', '#EF476F'],
+          borderColor: ['#5ddc63ff', '#EF476F'],
+          borderWidth: 3
         }]
       },
       options: {
@@ -772,7 +752,7 @@ initCharts() {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.dataset.label || ''}: €${context.raw.toFixed(2)}`;
+                return `${context.dataset.label || ''}: $${context.raw.toFixed(2)}`;
               }
             }
           }
@@ -782,10 +762,11 @@ initCharts() {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return '€' + value.toLocaleString();
+                return '$' + value.toLocaleString();
               },
               font: {
-                family: 'game'
+                family: 'game',
+                size: 18
               }
             },
             grid: {
@@ -799,7 +780,7 @@ initCharts() {
             ticks: {
               font: {
                 family: 'game',
-                size: 14
+                size: 18
               }
             }
           }

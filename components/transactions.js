@@ -341,13 +341,13 @@ class Transactions {
 
   formatDate(dateString) {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('es-ES', options);
+    return new Date(dateString).toLocaleDateString('en-US', options);
   }
 
   formatCurrency(amount) {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'USD'
     }).format(amount);
   }
 

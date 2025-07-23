@@ -1,10 +1,57 @@
 class Budgets {
   constructor() {
-    this.budgets = this.loadBudgets();
-    this.transactions = this.loadTransactions();
-    this.categories = this.loadCategories().filter(c => c.type === 'expense');
-    
-    this.template = `
+    this.budgets = [];
+    this.transactions = [];
+    this.categories = [];
+  }
+
+  async render(containerId) {
+    await this.loadCategories();
+    await this.loadTransactions();
+    await this.loadBudgets();
+    this.categories = this.categories.filter(c => c.type === 'expense');
+    this.template = this.getTemplate();
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = this.template;
+      this.initEvents();
+      this.updateSummary();
+      this.renderAlerts();
+      this.loadStyles();
+      this.initChart();
+    }
+    return;
+  }
+
+  async loadBudgets() {
+    try {
+      this.budgets = await window.idbUtils.getAll('budgets');
+    } catch (error) {
+      console.error('Error al cargar presupuestos:', error);
+      this.budgets = [];
+    }
+  }
+
+  async loadTransactions() {
+    try {
+      this.transactions = await window.idbUtils.getAll('transactions');
+    } catch (error) {
+      console.error('Error al cargar transacciones:', error);
+      this.transactions = [];
+    }
+  }
+
+  async loadCategories() {
+    try {
+      this.categories = await window.idbUtils.getAll('categories');
+    } catch (error) {
+      console.error('Error al cargar categorias:', error);
+      this.categories = [];
+    }
+  }
+
+  getTemplate() {
+    return `
       <div class="budgets-container">
         <div class="budgets-header">
           <div class="budgets-actions">
@@ -23,7 +70,6 @@ class Budgets {
             </div>
           </div>
         </div>
-        
         <div class="budgets-content">
           <div class="budgets-summary">
             <div class="summary-card">
@@ -39,9 +85,7 @@ class Budgets {
               <span class="amount balance" id="total-difference">$0.00</span>
             </div>
           </div>
-          
           <div class="budgets-alerts" id="budgets-alerts"></div>
-          
           <div class="budgets-table-container">
             <table class="budgets-table">
               <thead>
@@ -60,28 +104,23 @@ class Budgets {
               </tbody>
             </table>
           </div>
-          
           <div class="budget-projection">
             <h3>Proyeccion Mensual de Egresos</h3>
             <canvas id="expenses-chart"></canvas>
           </div>
         </div>
-        
         <div class="budget-modal" id="budget-modal">
           <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h2 id="modal-title">Nuevo Presupuesto</h2>
-            
             <form id="budget-form">
               <input type="hidden" id="budget-id">
-              
               <div class="form-group">
                 <label for="budget-year">Año</label>
                 <select id="budget-year" required>
                   ${this.generateYearOptions()}
                 </select>
               </div>
-              
               <div class="form-group">
                 <label for="budget-month">Mes</label>
                 <select id="budget-month" required>
@@ -90,7 +129,6 @@ class Budgets {
                   `).join('')}
                 </select>
               </div>
-              
               <div class="form-group">
                 <label for="budget-category">Categoria</label>
                 <select id="budget-category" required>
@@ -99,12 +137,10 @@ class Budgets {
                   `).join('')}
                 </select>
               </div>
-              
               <div class="form-group">
                 <label for="budget-amount">Monto Presupuestado</label>
                 <input type="number" id="budget-amount" min="0" step="0.01" required>
               </div>
-              
               <button type="submit" class="btn-save">Guardar</button>
             </form>
           </div>
@@ -113,98 +149,29 @@ class Budgets {
     `;
   }
 
-  loadBudgets() {
-    try {
-      const savedBudgets = localStorage.getItem('budgets');
-      return savedBudgets ? JSON.parse(savedBudgets) : [];
-    } catch (error) {
-      console.error('Error al cargar presupuestos:', error);
-      return [];
-    }
-  }
-
-  loadTransactions() {
-    try {
-      const savedTransactions = localStorage.getItem('transactions');
-      return savedTransactions ? JSON.parse(savedTransactions) : [];
-    } catch (error) {
-      console.error('Error al cargar transacciones:', error);
-      return [];
-    }
-  }
-
-  loadCategories() {
-    try {
-      const savedCategories = localStorage.getItem('categories');
-      return savedCategories ? JSON.parse(savedCategories) : [];
-    } catch (error) {
-      console.error('Error al cargar categorias:', error);
-      return [];
-    }
-  }
-
-  generateYearOptions() {
-    const currentYear = new Date().getFullYear();
-    return Array.from({length: 5}, (_, i) => `
-      <option value="${currentYear + i}">${currentYear + i}</option>
-    `).join('');
-  }
-
-  getMonthName(monthNumber) {
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return months[monthNumber - 1];
-  }
-
-  render(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-      container.innerHTML = this.template;
-      this.initEvents();
-      this.updateSummary();
-      this.renderAlerts();
-      this.loadStyles();
-      this.initChart();
-    }
-  }
-
   initEvents() {
-    // Delegacion de eventos
-    document.querySelector('.budgets-container')?.addEventListener('click', (e) => {
-      // Abrir modal para añadir nuevo presupuesto
+    document.querySelector('.budgets-container')?.addEventListener('click', async (e) => {
       if (e.target.closest('.btn-add-budget')) {
         this.openModal();
       }
-      
-      // Botones de editar
       if (e.target.closest('.btn-edit')) {
         const budgetId = e.target.closest('tr').getAttribute('data-id');
         this.editBudget(budgetId);
       }
-      
-      // Botones de eliminar
       if (e.target.closest('.btn-delete')) {
         const budgetId = e.target.closest('tr').getAttribute('data-id');
-        this.deleteBudget(budgetId);
+        await this.deleteBudget(budgetId);
       }
-      
-      // Cerrar modal
       if (e.target.closest('.close-modal')) {
         this.closeModal();
       }
-      
-      // Aplicar filtros
       if (e.target.closest('.btn-apply-filters')) {
         this.applyFilters();
       }
     });
-    
-    // Guardar presupuesto
-    document.getElementById('budget-form')?.addEventListener('submit', (e) => {
+    document.getElementById('budget-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      this.saveBudget();
+      await this.saveBudget();
     });
   }
 
@@ -223,7 +190,6 @@ class Budgets {
       document.getElementById('modal-title').textContent = 'Nuevo Presupuesto';
       form.reset();
       document.getElementById('budget-id').value = '';
-      // Establecer año y mes actual por defecto
       const now = new Date();
       document.getElementById('budget-year').value = now.getFullYear();
       document.getElementById('budget-month').value = now.getMonth() + 1;
@@ -243,10 +209,10 @@ class Budgets {
     }
   }
 
-  deleteBudget(id) {
+  async deleteBudget(id) {
     if (confirm('¿Estás seguro de que quieres eliminar este presupuesto?')) {
-      this.budgets = this.budgets.filter(b => b.id !== id);
-      this.saveBudgets();
+      await window.idbUtils.deleteById('budgets', id);
+      await this.loadBudgets();
       this.updateBudgetsList();
       this.updateSummary();
       this.renderAlerts();
@@ -254,7 +220,7 @@ class Budgets {
     }
   }
 
-  saveBudget() {
+  async saveBudget() {
     const form = document.getElementById('budget-form');
     const idInput = form.querySelector('#budget-id');
     const year = parseInt(form.querySelector('#budget-year').value);
@@ -282,8 +248,6 @@ class Budgets {
       alert('Por favor ingresa un monto válido');
       return;
     }
-
-    // Verificar si ya existe un presupuesto para esta categoria en el mismo mes/año
     const existingBudget = this.budgets.find(b => 
       b.year === year && 
       b.month === month && 
@@ -296,30 +260,19 @@ class Budgets {
       alert(`Ya existe un presupuesto para ${category.name} en ${this.getMonthName(month)}/${year}`);
       return;
     }
-
+    let id;
     if (idInput.value) {
-      // Editar presupuesto existente
-      const id = idInput.value;
-      const index = this.budgets.findIndex(b => b.id === id);
-      if (index !== -1) {
-        this.budgets[index] = { id, year, month, categoryId, amount };
-      }
+      id = idInput.value;
     } else {
-      // Crear nuevo presupuesto
-      const newId = this.generateUniqueId();
-      this.budgets.push({ id: newId, year, month, categoryId, amount });
+      id = this.generateUniqueId();
     }
-
-    this.saveBudgets();
+    await window.idbUtils.put('budgets', { id, year, month, categoryId, amount });
+    await this.loadBudgets();
     this.closeModal();
     this.updateBudgetsList();
     this.updateSummary();
     this.renderAlerts();
     this.updateChart();
-  }
-
-  saveBudgets() {
-    localStorage.setItem('budgets', JSON.stringify(this.budgets));
   }
 
   updateBudgetsList() {
@@ -332,43 +285,30 @@ class Budgets {
   renderBudgets() {
     const selectedYear = document.getElementById('year-filter')?.value || new Date().getFullYear();
     const selectedMonth = document.getElementById('month-filter')?.value || '0';
-    
-    // Filtramos presupuestos por año y mes (si no es "Todos los meses")
-    const filteredBudgets = this.budgets.filter(b => 
-      b.year == selectedYear && 
+    const filteredBudgets = this.budgets.filter(b =>
+      b.year == selectedYear &&
       (selectedMonth === '0' || b.month == selectedMonth)
     );
-
-    // Obtenemos todas las categorias con presupuesto según los filtros
     const categoriesWithBudget = [...new Set(
       filteredBudgets.map(b => b.categoryId)
     )];
-
     return categoriesWithBudget.map(categoryId => {
       const category = this.categories.find(c => c.id == categoryId) || { name: 'Desconocida' };
-      
-      // Calculamos el presupuesto total para la categoria según los filtros
       const totalBudget = filteredBudgets
         .filter(b => b.categoryId == categoryId)
         .reduce((sum, b) => sum + b.amount, 0);
-      
-      // Calculamos los gastos reales para la categoria según los filtros
       const totalExpenses = this.transactions
-        .filter(t => 
-          t.type === 'expense' && 
+        .filter(t =>
+          t.type === 'expense' &&
           t.categoryId == categoryId &&
           new Date(t.date).getFullYear() == selectedYear &&
           (selectedMonth === '0' || new Date(t.date).getMonth() + 1 == selectedMonth)
         )
         .reduce((sum, t) => sum + t.amount, 0);
-      
-      // Resto del método permanece igual
       const difference = totalBudget - totalExpenses;
       const percentageUsed = totalBudget > 0 ? (totalExpenses / totalBudget) * 100 : 0;
-      
       let statusClass = '';
       let statusText = '';
-      
       if (totalBudget === 0) {
         statusClass = 'inactive';
         statusText = 'Sin presupuesto';
@@ -382,7 +322,6 @@ class Budgets {
         statusClass = 'safe';
         statusText = 'Egreso Bajo';
       }
-      
       return `
         <tr data-id="${categoryId}">
           <td>${category.name}</td>
@@ -419,28 +358,22 @@ class Budgets {
   updateSummary() {
     const selectedYear = document.getElementById('year-filter')?.value || new Date().getFullYear();
     const selectedMonth = document.getElementById('month-filter')?.value || '0';
-    
-    const filteredBudgets = this.budgets.filter(b => 
-      b.year == selectedYear && 
+    const filteredBudgets = this.budgets.filter(b =>
+      b.year == selectedYear &&
       (selectedMonth === '0' || b.month == selectedMonth)
     );
-    
     const filteredExpenses = this.transactions
-      .filter(t => 
-        t.type === 'expense' && 
+      .filter(t =>
+        t.type === 'expense' &&
         new Date(t.date).getFullYear() == selectedYear &&
         (selectedMonth === '0' || new Date(t.date).getMonth() + 1 == selectedMonth)
       );
-    
-    // Resto del método permanece igual
     const totalBudget = filteredBudgets.reduce((sum, b) => sum + b.amount, 0);
     const totalExpenses = filteredExpenses.reduce((sum, t) => sum + t.amount, 0);
     const difference = totalBudget - totalExpenses;
-    
     const totalBudgetElement = document.getElementById('total-budget');
     const totalExpensesElement = document.getElementById('total-expenses');
     const totalDifferenceElement = document.getElementById('total-difference');
-    
     if (totalBudgetElement) totalBudgetElement.textContent = this.formatCurrency(totalBudget);
     if (totalExpensesElement) totalExpensesElement.textContent = this.formatCurrency(totalExpenses);
     if (totalDifferenceElement) {
@@ -452,12 +385,9 @@ class Budgets {
   renderAlerts() {
     const alertsContainer = document.getElementById('budgets-alerts');
     if (!alertsContainer) return;
-    
     const selectedYear = document.getElementById('year-filter')?.value || new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
-    
-    // Solo mostrar alertas para el mes actual del año actual
     if (selectedYear != currentYear) {
       alertsContainer.innerHTML = `
         <div class="alert info">
@@ -466,31 +396,21 @@ class Budgets {
       `;
       return;
     }
-
-    // Obtener presupuestos del mes actual
-    const currentBudgets = this.budgets.filter(b => 
+    const currentBudgets = this.budgets.filter(b =>
       b.year == selectedYear && b.month == currentMonth
     );
-    
     const alerts = [];
-    
     currentBudgets.forEach(budget => {
       const category = this.categories.find(c => c.id === budget.categoryId) || { name: 'Desconocida' };
-      
-      // Calcular gastos reales para esta categoria en el mes actual
       const expenses = this.transactions
-        .filter(t => 
-          t.type === 'expense' && 
+        .filter(t =>
+          t.type === 'expense' &&
           t.categoryId === budget.categoryId &&
           new Date(t.date).getFullYear() == budget.year &&
           new Date(t.date).getMonth() + 1 == budget.month
         )
         .reduce((sum, t) => sum + t.amount, 0);
-      
-      // Calcular porcentaje usado (con proteccion contra division por cero)
       const percentage = budget.amount > 0 ? (expenses / budget.amount) * 100 : 0;
-      
-      // Generar alertas solo si hay presupuesto asignado
       if (budget.amount > 0) {
         if (expenses > budget.amount) {
           alerts.push(`
@@ -512,8 +432,8 @@ class Budgets {
         }
       }
     });
-    
-    }
+    alertsContainer.innerHTML = alerts.join('');
+  }
 
   initChart() {
     this.chartCanvas = document.getElementById('expenses-chart');
@@ -528,11 +448,9 @@ class Budgets {
     const selectedYear = document.getElementById('year-filter')?.value || new Date().getFullYear();
     const selectedMonth = document.getElementById('month-filter')?.value || '0';
     
-    // Si hay un mes seleccionado, mostramos solo ese mes
     if (selectedMonth !== '0') {
       const monthName = this.getMonthName(selectedMonth);
       
-      // Calcular gastos para el mes seleccionado
       const expenses = this.transactions
         .filter(t => 
           t.type === 'expense' && 
@@ -541,12 +459,10 @@ class Budgets {
         )
         .reduce((sum, t) => sum + t.amount, 0);
       
-      // Calcular presupuesto para el mes seleccionado
       const budget = this.budgets
         .filter(b => b.year == selectedYear && b.month == selectedMonth)
         .reduce((sum, b) => sum + b.amount, 0);
       
-      // Destruir el gráfico anterior si existe
       if (this.expensesChart) {
         this.expensesChart.destroy();
       }
@@ -585,18 +501,18 @@ class Budgets {
           plugins: {
             tooltip: {
               callbacks: {
-                label: context => {
+                label: 
+                context => {
                   const label = context.dataset.label || '';
                   const value = context.raw || 0;
                   return `${label}: ${this.formatCurrency(value)}`;
-                }
+                },
               }
             }
           }
         }
       });
     } else {
-      // Mostrar todos los meses (código original)
       const months = Array.from({length: 12}, (_, i) => this.getMonthName(i + 1));
       
       const monthlyExpenses = Array(12).fill(0);
@@ -664,14 +580,14 @@ class Budgets {
             }
           }
         }
-      });
+      })
     }
   }
 
   formatCurrency(amount) {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'USD'
     }).format(amount);
   }
 
@@ -686,5 +602,20 @@ class Budgets {
     link.rel = 'stylesheet';
     link.href = './css/budgets.css';
     document.head.appendChild(link);
+  }
+
+  generateYearOptions() {
+    const currentYear = new Date().getFullYear();
+    return Array.from({length: 5}, (_, i) => `
+      <option value="${currentYear + i}">${currentYear + i}</option>
+    `).join('');
+  }
+
+  getMonthName(monthNumber) {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return months[monthNumber - 1];
   }
 }
