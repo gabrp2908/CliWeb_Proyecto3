@@ -26,7 +26,7 @@ class Sidebar {
         </ul>
         
         <div class="sidebar-footer">
-        <img src="./assets/images/erick.png"><img src="./assets/images/gabriela.png">
+        <img src="./assets/images/Erick.png"><img src="./assets/images/Gabriela.png">
         <h5>Creado por:</h5> 
         <h5>Erick Diaz y Gabriela Rey</h5>
         </div>
