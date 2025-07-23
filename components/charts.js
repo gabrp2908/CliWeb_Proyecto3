@@ -542,8 +542,9 @@ class Charts {
           {
             label: 'Egresos Reales',
             data: monthlyExpenses,
-            borderColor: '#EF476F',
+            borderColor: '#4a3c2a',
             backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            borderDash: [5, 5],
             tension: 0.3,
             fill: true,
             borderWidth: 3
@@ -551,9 +552,8 @@ class Charts {
           {
             label: 'Presupuesto',
             data: monthlyBudgets,
-            borderColor: '#FFD166',
+            borderColor: '#4a3c2a',
             backgroundColor: 'rgba(255, 209, 102, 0.1)',
-            borderDash: [5, 5],
             tension: 0.3,
             borderWidth: 3
           }
