@@ -20,6 +20,8 @@ class Categories {
       container.innerHTML = this.getTemplate();
       this.initEvents();
       this.loadStyles();
+      const modal = document.getElementById('category-modal');
+      if (modal) modal.style.display = 'none';
     }
   }
 
@@ -115,8 +117,10 @@ class Categories {
       document.getElementById('category-type').value = category.type;
     } else {
       document.getElementById('modal-title').textContent = 'Nueva Categoria';
-      form.reset();
+      // Limpiar campos manualmente, no usar form.reset()
       document.getElementById('category-id').value = '';
+      document.getElementById('category-name').value = '';
+      document.getElementById('category-type').selectedIndex = 0;
     }
     
     modal.style.display = 'flex';
