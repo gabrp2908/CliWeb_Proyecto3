@@ -22,31 +22,25 @@ function loadSection(sectionId) {
   const section = document.getElementById(sectionId);
   if (section) {
     section.classList.add('active');
-    
-    // Cargar componente correspondiente
     switch(sectionId) {
       case 'dashboard':
         const charts = new Charts();
         charts.render(sectionId);
         break;
-        
       case 'categories':
         const categories = new Categories();
         categories.render(sectionId);
         break;
-
       case 'transactions':
         const transactions = new Transactions();
         transactions.render(sectionId);
         break;
-
       case 'budgets':
         const budgets = new Budgets();
         budgets.render(sectionId);
         break;
     }
   }
-
   updateSectionTitle(sectionId);
 }
 
