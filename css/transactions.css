@@ -68,7 +68,6 @@
   background-color: var(--beige);
 }
 
-/* Resumen financiero */
 .transactions-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -87,31 +86,6 @@
 .summary-card h3 {
   margin-bottom: 10px;
   font-size: 20px;
-}
-
-.amount {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.amount.income {
-  color: #06D6A0;
-}
-
-.amount.expense {
-  color: #d63031;
-}
-
-.amount.balance {
-  color: var(--dark-brown);
-}
-
-.amount.balance.positive {
-  color: #06D6A0;
-}
-
-.amount.balance.negative {
-  color: #d63031;
 }
 
 /* Tabla de transacciones */
@@ -259,23 +233,20 @@
   background-color: var(--beige);
 }
 
-/* Estilos responsivos */
+/* Responsive */
 @media (max-width: 768px) {
   .transactions-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  
   .search-filter-container {
     flex-direction: column;
   }
-  
   .search-filter-container input,
   .search-filter-container select,
   .search-filter-container button {
     width: 100%;
   }
-  
   .transactions-table {
     display: block;
     overflow-x: auto;
@@ -286,13 +257,12 @@
   .transactions-summary {
     grid-template-columns: 1fr;
   }
-  
   .transactions-table th,
   .transactions-table td {
     padding: 8px 10px;
     font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
   }
 }

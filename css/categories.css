@@ -48,13 +48,6 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.category-icon {
-  font-size: 30px;
-  margin-right: 15px;
-  width: 40px;
-  text-align: center;
-}
-
 .category-info {
   flex-grow: 1;
 }
@@ -185,12 +178,6 @@
     flex-direction: column;
     text-align: center;
   }
-  
-  .category-icon {
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-  
   .category-actions {
     margin-top: 10px;
   }

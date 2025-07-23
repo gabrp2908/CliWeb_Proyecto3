@@ -125,66 +125,6 @@
   animation: spin 1s ease-in-out infinite;
 }
 
-.btn-apply {
-  background: linear-gradient(to bottom, var(--dark-beige), var(--beige));
-  border: 3px solid var(--brown);
-  border-radius: 10px;
-  padding: 12px 25px;
-  font-family: 'game', cursive;
-  font-size: 20px;
-  color: var(--dark-brown);
-  cursor: url('../assets/images/pointer.png'), pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-.btn-apply::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: 0.5s;
-}
-.btn-apply:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-.btn-apply:hover::before {
-  left: 100%;
-}
-.btn-apply img {
-  width: 26px;
-  height: 26px;
-  transition: all 0.5s;
-}
-.btn-apply:hover img {
-  transform: rotate(360deg) scale(1.1);
-}
-.btn-apply.loading {
-  position: relative;
-  pointer-events: none;
-}
-.btn-apply.loading::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 3px solid rgba(127, 46, 0, 0.2);
-  border-top-color: var(--brown);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
 .chart-card {
   background-color: var(--light-beige);
   border: 4px solid var(--brown);
@@ -216,6 +156,7 @@
   overflow: hidden;
 }
 
+/* Loading states for selects and charts */
 .select-loading {
   position: relative;
   opacity: 0.8;
@@ -260,6 +201,7 @@
   z-index: 10;
 }
 
+/* Responsive */
 @media (min-width: 1600px) {
   .charts-container {
     max-width: 1600px;
@@ -273,7 +215,7 @@
     font-size: 22px;
     min-width: 200px;
   }
-  .btn-apply {
+  .apply-btn {
     font-size: 22px;
     padding: 15px 30px;
   }
@@ -374,4 +316,9 @@
   .chart-container {
     min-height: 140px;
   }
+}
+
+/* Animación para loading */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

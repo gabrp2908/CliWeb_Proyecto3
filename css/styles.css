@@ -1,4 +1,4 @@
-/* Colores Base */
+/* Colores Base y fuentes */
 :root {
   --beige: #FFD284;
   --dark-beige: #ECA867;
@@ -58,15 +58,15 @@ body {
   margin-bottom: 0;
 }
 
-/* Tarjetas y contenido */
+/* Secciones de contenido */
 .content-section {
   display: none;
 }
-
 .content-section.active {
   display: block;
 }
 
+/* Layout de tarjetas y filas */
 .row {
   display: flex;
   gap: 20px;
@@ -89,10 +89,6 @@ body {
   align-items: center;
 }
 
-.card h2 i {
-  margin-right: 10px;
-}
-
 .chart-card {
   min-width: 60%;
 }
@@ -110,7 +106,6 @@ body {
     margin-left: 0;
     max-width: 100%;
   }
-  
   .row {
     flex-direction: column;
   }
