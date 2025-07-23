@@ -480,7 +480,7 @@ class Budgets {
         labels: months,
         datasets: [
           {
-            label: 'Egresos Reales',
+            label: 'Egresos',
             data: monthlyExpenses,
             borderColor: '#4a3c2a',
             backgroundColor: 'rgba(255, 209, 102, 0.1)',

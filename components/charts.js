@@ -450,7 +450,7 @@ class Charts {
 
     const ctx = document.getElementById('expenses-by-category-chart');
     if (!ctx) {
-      console.error('No se encontró el canvas para el gráfico de gastos por categoría');
+      console.error('No se encontró el canvas para el gráfico de egresos por categoría');
       return null;
     }
     
@@ -540,11 +540,10 @@ class Charts {
         labels: months,
         datasets: [
           {
-            label: 'Egresos Reales',
+            label: 'Egresos',
             data: monthlyExpenses,
             borderColor: '#4a3c2a',
             backgroundColor: 'rgba(255, 107, 107, 0.1)',
-            borderDash: [5, 5],
             tension: 0.3,
             fill: true,
             borderWidth: 3
@@ -554,6 +553,7 @@ class Charts {
             data: monthlyBudgets,
             borderColor: '#4a3c2a',
             backgroundColor: 'rgba(255, 209, 102, 0.1)',
+            borderDash: [5, 5],
             tension: 0.3,
             borderWidth: 3
           }
@@ -734,14 +734,14 @@ class Charts {
     
     const ctx = document.getElementById('expenses-vs-income-chart');
     if (!ctx) {
-      console.error('No se encontró el canvas para el gráfico de gastos vs ingresos');
+      console.error('No se encontró el canvas para el gráfico de egresos vs ingresos');
       return null;
     }
     
     return new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Ingresos', 'Gastos'],
+        labels: ['Ingresos', 'Egresos'],
         datasets: [{
           data: [totalIncome, totalExpenses],
           backgroundColor: ['#5ddc63ff', '#EF476F'],
