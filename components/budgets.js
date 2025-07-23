@@ -444,144 +444,116 @@ class Budgets {
 
   updateChart() {
     if (!this.chartCanvas || !window.Chart) return;
-    
+
+    // Destruye el gráfico anterior si existe
+    if (this.expensesChart) {
+      this.expensesChart.destroy();
+      this.expensesChart = null;
+    }
+
     const selectedYear = document.getElementById('year-filter')?.value || new Date().getFullYear();
     const selectedMonth = document.getElementById('month-filter')?.value || '0';
-    
-    if (selectedMonth !== '0') {
-      const monthName = this.getMonthName(selectedMonth);
-      
-      const expenses = this.transactions
-        .filter(t => 
-          t.type === 'expense' && 
-          new Date(t.date).getFullYear() == selectedYear &&
-          new Date(t.date).getMonth() + 1 == selectedMonth
-        )
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      const budget = this.budgets
-        .filter(b => b.year == selectedYear && b.month == selectedMonth)
-        .reduce((sum, b) => sum + b.amount, 0);
-      
-      if (this.expensesChart) {
-        this.expensesChart.destroy();
-      }
-      
-      this.expensesChart = new Chart(this.chartCanvas.getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: [monthName],
-          datasets: [
-            {
-              label: 'Presupuesto',
-              data: [budget],
-              backgroundColor: 'rgba(236, 168, 103, 0.7)',
-              borderColor: 'rgba(236, 168, 103, 1)',
-              borderWidth: 1
-            },
-            {
-              label: 'Egresos Reales',
-              data: [expenses],
-              backgroundColor: 'rgba(255, 107, 107, 0.7)',
-              borderColor: 'rgba(255, 107, 107, 1)',
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: value => this.formatCurrency(value)
-              }
-            }
-          },
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: 
-                context => {
-                  const label = context.dataset.label || '';
-                  const value = context.raw || 0;
-                  return `${label}: ${this.formatCurrency(value)}`;
-                },
-              }
-            }
-          }
-        }
+
+    const months = Array.from({length: 12}, (_, i) => this.getMonthName(i + 1));
+    const monthlyExpenses = Array(12).fill(0);
+    this.transactions
+      .filter(t =>
+        t.type === 'expense' &&
+        new Date(t.date).getFullYear() == selectedYear
+      )
+      .forEach(t => {
+        const month = new Date(t.date).getMonth();
+        monthlyExpenses[month] += t.amount;
       });
-    } else {
-      const months = Array.from({length: 12}, (_, i) => this.getMonthName(i + 1));
-      
-      const monthlyExpenses = Array(12).fill(0);
-      this.transactions
-        .filter(t => 
-          t.type === 'expense' && 
-          new Date(t.date).getFullYear() == selectedYear
-        )
-        .forEach(t => {
-          const month = new Date(t.date).getMonth();
-          monthlyExpenses[month] += t.amount;
-        });
-      
-      const monthlyBudgets = Array(12).fill(0);
-      this.budgets
-        .filter(b => b.year == selectedYear)
-        .forEach(b => {
-          monthlyBudgets[b.month - 1] += b.amount;
-        });
-      
-      if (this.expensesChart) {
-        this.expensesChart.destroy();
-      }
-      
-      this.expensesChart = new Chart(this.chartCanvas.getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: months,
-          datasets: [
-            {
-              label: 'Presupuesto',
-              data: monthlyBudgets,
-              backgroundColor: 'rgba(236, 168, 103, 0.7)',
-              borderColor: 'rgba(236, 168, 103, 1)',
-              borderWidth: 1
-            },
-            {
-              label: 'Egresos Reales',
-              data: monthlyExpenses,
-              backgroundColor: 'rgba(255, 107, 107, 0.7)',
-              borderColor: 'rgba(255, 107, 107, 1)',
-              borderWidth: 1
-            }
-          ]
+
+    const monthlyBudgets = Array(12).fill(0);
+    this.budgets
+      .filter(b => b.year == selectedYear)
+      .forEach(b => {
+        monthlyBudgets[b.month - 1] += b.amount;
+      });
+
+    // Crear el gráfico solo una vez por actualización
+    this.expensesChart = new Chart(this.chartCanvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'Egresos Reales',
+            data: monthlyExpenses,
+            borderColor: '#4a3c2a',
+            backgroundColor: 'rgba(255, 209, 102, 0.1)',
+            tension: 0.3,
+            fill: true,
+            borderWidth: 3
+          },
+          {
+            label: 'Presupuesto',
+            data: monthlyBudgets,
+            borderColor: '#4a3c2a',
+            backgroundColor: 'rgba(255, 209, 102, 0.1)',
+            borderDash: [5, 5],
+            tension: 0.3,
+            borderWidth: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 300,
+          easing: 'easeOutQuart'
         },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: value => this.formatCurrency(value)
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              font: {
+                family: 'game',
+                size: 18
               }
             }
           },
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: context => {
-                  const label = context.dataset.label || '';
-                  const value = context.raw || 0;
-                  return `${label}: ${this.formatCurrency(value)}`;
-                }
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toLocaleString();
+              },
+              font: {
+                size: 18,
+                family: 'game'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 18,
+                family: 'game'
               }
             }
           }
         }
-      })
-    }
+      }
+    });
   }
 
   formatCurrency(amount) {

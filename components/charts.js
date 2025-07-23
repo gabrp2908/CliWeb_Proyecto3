@@ -32,10 +32,12 @@ class Charts {
     try {
       this.transactions = await window.idbUtils.getAll('transactions');
       this.categories = await window.idbUtils.getAll('categories');
+      this.budgets = await window.idbUtils.getAll('budgets'); // <-- cargar presupuestos
     } catch (error) {
       console.error('Error al cargar datos de IndexedDB:', error);
       this.transactions = [];
       this.categories = [];
+      this.budgets = [];
     }
   }
 
@@ -500,47 +502,57 @@ class Charts {
   }
 
   renderRealVsEstimatedChart(year) {
-    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    
-    const realData = Array(12).fill(0);
-    const estimatedData = Array(12).fill(0).map(() => Math.random() * 2000 + 1000); // Datos de ejemplo
-    
-    this.transactions.forEach(t => {
-      const date = new Date(t.date);
-      if (date.getFullYear() === year) {
-        const month = date.getMonth();
-        if (t.type === 'income') {
-          realData[month] += t.amount;
-        } else {
-          realData[month] -= t.amount;
-        }
-      }
-    });
-    
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    // Egresos reales igual que budgets.js
+    const monthlyExpenses = Array(12).fill(0);
+    this.transactions
+      .filter(t =>
+        t.type === 'expense' &&
+        new Date(t.date).getFullYear() == year
+      )
+      .forEach(t => {
+        const month = new Date(t.date).getMonth();
+        monthlyExpenses[month] += t.amount;
+      });
+
+    // Presupuesto mensual igual que budgets.js
+    const monthlyBudgets = Array(12).fill(0);
+    if (this.budgets) {
+      this.budgets
+        .filter(b => b.year == year)
+        .forEach(b => {
+          monthlyBudgets[b.month - 1] += b.amount;
+        });
+    }
+
     const ctx = document.getElementById('real-vs-estimated-chart');
     if (!ctx) {
       console.error('No se encontró el canvas para el gráfico real vs estimado');
       return null;
     }
-    
+
     return new Chart(ctx, {
       type: 'line',
       data: {
         labels: months,
         datasets: [
           {
-            label: 'Real',
-            data: realData,
-            borderColor: '#4a3c2a',
-            backgroundColor: 'rgba(255, 209, 102, 0.1)',
+            label: 'Egresos Reales',
+            data: monthlyExpenses,
+            borderColor: '#EF476F',
+            backgroundColor: 'rgba(255, 107, 107, 0.1)',
             tension: 0.3,
             fill: true,
             borderWidth: 3
           },
           {
-            label: 'Estimado',
-            data: estimatedData,
-            borderColor: '#4a3c2a',
+            label: 'Presupuesto',
+            data: monthlyBudgets,
+            borderColor: '#FFD166',
             backgroundColor: 'rgba(255, 209, 102, 0.1)',
             borderDash: [5, 5],
             tension: 0.3,
@@ -552,8 +564,8 @@ class Charts {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-        duration: 300,
-        easing: 'easeOutQuart'
+          duration: 300,
+          easing: 'easeOutQuart'
         },
         plugins: {
           legend: {
@@ -575,7 +587,7 @@ class Charts {
         },
         scales: {
           y: {
-            beginAtZero: false,
+            beginAtZero: true,
             ticks: {
               callback: function(value) {
                 return '$' + value.toLocaleString();

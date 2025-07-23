@@ -245,6 +245,15 @@
   font-size: 22px;
 }
 
+.budget-projection canvas {
+  min-height: 350px;
+  height: 350px;
+  max-width: 100%;
+  max-height: 350px;
+  display: block;
+  margin: 0 auto;
+}
+
 /* Modal de presupuesto */
 .budget-modal {
   display: none;
