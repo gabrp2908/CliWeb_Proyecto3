@@ -112,18 +112,17 @@ class Charts {
 
   getYearOptions() {
     const currentYear = new Date().getFullYear();
+    const startYear = 2020;
+    const endYear = currentYear + 1;
     const years = [];
-    
-    for (let i = currentYear - 5; i <= currentYear + 1; i++) {
+    for (let i = startYear; i <= endYear; i++) {
       years.push(i);
     }
-    
     const options = years.map(year => 
       `<option value="${year}" ${year === this.currentYear ? 'selected' : ''}>
         ${year}
       </option>`
     );
-    
     return options.join('');
   }
 
