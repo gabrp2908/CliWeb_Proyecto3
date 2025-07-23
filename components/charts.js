@@ -460,7 +460,7 @@ class Charts {
         datasets: [{
           data: Object.values(categoriesData),
           backgroundColor: this.generateColors(Object.keys(categoriesData).length),
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: 'var(--light-beige)'
         }]
       },
@@ -535,7 +535,7 @@ class Charts {
             backgroundColor: 'rgba(255, 209, 102, 0.1)',
             tension: 0.3,
             fill: true,
-            borderWidth: 1
+            borderWidth: 3
           },
           {
             label: 'Estimado',
@@ -644,7 +644,7 @@ class Charts {
           backgroundColor: 'rgba(255, 209, 102, 0.1)',
           tension: 0.3,
           fill: true,
-          borderWidth: 1
+          borderWidth: 3
         }]
       },
       options: {
@@ -735,7 +735,7 @@ class Charts {
           data: [totalIncome, totalExpenses],
           backgroundColor: ['#5ddc63ff', '#EF476F'],
           borderColor: ['#5ddc63ff', '#EF476F'],
-          borderWidth: 2
+          borderWidth: 3
         }]
       },
       options: {

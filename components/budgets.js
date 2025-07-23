@@ -501,11 +501,12 @@ class Budgets {
           plugins: {
             tooltip: {
               callbacks: {
-                label: context => {
+                label: 
+                context => {
                   const label = context.dataset.label || '';
                   const value = context.raw || 0;
                   return `${label}: ${this.formatCurrency(value)}`;
-                }
+                },
               }
             }
           }
@@ -584,9 +585,9 @@ class Budgets {
   }
 
   formatCurrency(amount) {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'USD'
     }).format(amount);
   }
 
