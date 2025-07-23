@@ -34,6 +34,11 @@ function loadSection(sectionId) {
         const transactions = new Transactions();
         transactions.render(sectionId);
         break;
+
+      case 'budgets':
+        const budgets = new Budgets();
+        budgets.render(sectionId);
+        break;
     }
   }
 
