@@ -547,7 +547,7 @@ class Charts {
             label: 'Egresos',
             data: monthlyExpenses,
             borderColor: '#4a3c2a',
-            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            backgroundColor: 'rgba(255, 0, 0, 0.27)',
             tension: 0.3,
             fill: true,
             borderWidth: 3
@@ -556,9 +556,10 @@ class Charts {
             label: 'Presupuesto',
             data: monthlyBudgets,
             borderColor: '#4a3c2a',
-            backgroundColor: 'rgba(255, 209, 102, 0.1)',
+            backgroundColor: 'rgba(30, 255, 5, 0.28)',
             borderDash: [5, 5],
             tension: 0.3,
+            fill: true,
             borderWidth: 3
           }
         ]
