@@ -139,12 +139,11 @@
   transform: translateY(-5px);
 }
 .chart-card h2 {
-  margin: 0 0 20px 0;
   color: var(--dark-brown);
+  margin-bottom: 0px;
+  padding-bottom: 0px;
   font-size: 1.8rem;
   text-align: center;
-  padding-bottom: 15px;
-  border-bottom: 3px solid var(--brown);
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -156,7 +155,6 @@
   overflow: hidden;
 }
 
-/* Loading states for selects and charts */
 .select-loading {
   position: relative;
   opacity: 0.8;
@@ -321,4 +319,10 @@
 /* Animación para loading */
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+
+.chart-desc{
+  font-size: 16px;
+  border-bottom: 3px solid var(--brown);
 }

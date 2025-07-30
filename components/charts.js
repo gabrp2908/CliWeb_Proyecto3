@@ -64,6 +64,7 @@ class Charts {
       <div class="row">
         <div class="card chart-card">
           <h2>Egresos por Categoria</h2>
+          <p class="chart-desc">Distribucion de tus gastos por cada categoria en el mes seleccionado</p>
           <div id="expenses-by-category-chart-container" class="chart-container">
             <canvas id="expenses-by-category-chart"></canvas>
           </div>
@@ -71,6 +72,7 @@ class Charts {
         
         <div class="card chart-card">
           <h2>Distribucion Egresos vs Ingresos</h2>
+          <p class="chart-desc">Comparacion entre el total de ingresos y egresos del mes seleccionado</p>
           <div id="expenses-vs-income-chart-container" class="chart-container">
             <canvas id="expenses-vs-income-chart"></canvas>
           </div>
@@ -80,6 +82,7 @@ class Charts {
       <div class="row">
         <div class="card chart-card">
             <h2>Balance Real vs Estimado</h2>
+            <p class="chart-desc">Comparacion mensual entre egresos reales y presupuesto estimado</p>
             <div id="real-vs-estimated-chart-container" class="chart-container">
             <canvas id="real-vs-estimated-chart"></canvas>
             </div>
@@ -87,6 +90,7 @@ class Charts {
      
         <div class="card chart-card">
           <h2>Evolucion del Balance (Anual)</h2>
+          <p class="chart-desc">Evolucion acumulada de tu balance mes a mes durante el año seleccionado</p>
           <div id="balance-evolution-chart-container" class="chart-container">
             <canvas id="balance-evolution-chart"></canvas>
         </div>
