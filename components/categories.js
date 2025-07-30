@@ -2,14 +2,14 @@ class Categories {
   constructor() {
     this.categories = [];
     this.defaultCategories = [
-      { id: 1, name: 'Alimentacion', type: 'expense' },
-      { id: 2, name: 'Transporte', type: 'expense' },
-      { id: 3, name: 'Ocio', type: 'expense' },
-      { id: 4, name: 'Servicios', type: 'expense' },
-      { id: 5, name: 'Salud', type: 'expense' },
-      { id: 6, name: 'Educacion', type: 'expense' },
-      { id: 7, name: 'Otros', type: 'income' },
-      { id: 8, name: 'Salario', type: 'income' }
+      { id: 1, name: 'Alimentacion'},
+      { id: 2, name: 'Transporte'},
+      { id: 3, name: 'Ocio'},
+      { id: 4, name: 'Servicios'},
+      { id: 5, name: 'Salud'},
+      { id: 6, name: 'Educacion'},
+      { id: 7, name: 'Otros'},
+      { id: 8, name: 'Salario'}
     ];
   }
 
@@ -45,7 +45,6 @@ class Categories {
             <div class="category-card" data-id="${category.id}">
               <div class="category-info">
                 <h3>${category.name}</h3>
-                <span class="category-type ${category.type}">${category.type === 'expense' ? 'Egreso' : 'Ingreso'}</span>
               </div>
               <div class="category-actions">
                 <button class="btn-edit"><img src="./assets/images/edit.png" class="icon" alt="Editar"></button>
@@ -63,13 +62,6 @@ class Categories {
               <div class="form-group">
                 <label for="category-name">Nombre</label>
                 <input type="text" id="category-name" required>
-              </div>
-              <div class="form-group">
-                <label for="category-type">Tipo</label>
-                <select id="category-type" required>
-                  <option value="expense">Egreso</option>
-                  <option value="income">Ingreso</option>
-                </select>
               </div>
               <button type="submit" class="btn-save">Guardar</button>
             </form>
@@ -114,13 +106,11 @@ class Categories {
       document.getElementById('modal-title').textContent = 'Editar Categoria';
       document.getElementById('category-id').value = category.id;
       document.getElementById('category-name').value = category.name;
-      document.getElementById('category-type').value = category.type;
     } else {
       document.getElementById('modal-title').textContent = 'Nueva Categoria';
       // Limpiar campos manualmente, no usar form.reset()
       document.getElementById('category-id').value = '';
       document.getElementById('category-name').value = '';
-      document.getElementById('category-type').selectedIndex = 0;
     }
     
     modal.style.display = 'flex';
@@ -149,15 +139,9 @@ class Categories {
     const form = document.getElementById('category-form');
     const idInput = form.querySelector('#category-id');
     const name = form.querySelector('#category-name').value.trim();
-    const type = form.querySelector('#category-type').value;
     
     if (!name) {
       alert('Ingrese un nombre para la categoria');
-      return;
-    }
-
-    if (!['expense', 'income'].includes(type)) {
-      alert('Tipo de categoria no valido');
       return;
     }
 
@@ -178,7 +162,7 @@ class Categories {
       id = this.generateUniqueId();
     }
 
-    await window.idbUtils.put('categories', { id, name, type });
+    await window.idbUtils.put('categories', { id, name});
     await this.loadCategories();
     this.closeModal();
     this.updateCategoriesList();
@@ -191,7 +175,6 @@ class Categories {
         <div class="category-card" data-id="${category.id}">
           <div class="category-info">
             <h3>${category.name}</h3>
-            <span class="category-type ${category.type}">${category.type === 'expense' ? 'Egreso' : 'Ingreso'}</span>
           </div>
           <div class="category-actions">
             <button class="btn-edit"><img src="./assets/images/edit.png" class="icon" alt="Editar"></button>
